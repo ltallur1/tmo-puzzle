@@ -3,6 +3,7 @@ import { SharedTestingModule } from '@tmo/shared/testing';
 
 import { AppComponent } from './app.component';
 import { AppModule } from './app.module';
+import { okReadsConstants } from '@tmo/shared/models';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -22,6 +23,6 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('okreads');
+    expect(compiled.querySelector('h1').textContent).toContain(okReadsConstants.TITLE);
   });
 });

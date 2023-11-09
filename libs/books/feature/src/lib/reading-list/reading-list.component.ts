@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { getReadingList, removeFromReadingList } from '@tmo/books/data-access';
+import { ReadingListItem, okReadsConstants } from '@tmo/shared/models';
 
 @Component({
   selector: 'tmo-reading-list',
@@ -9,10 +10,11 @@ import { getReadingList, removeFromReadingList } from '@tmo/books/data-access';
 })
 export class ReadingListComponent {
   readingList$ = this.store.select(getReadingList);
+  readingListConstants = okReadsConstants;
 
   constructor(private readonly store: Store) {}
 
-  removeFromReadingList(item) {
+  removeFromReadingList(item : ReadingListItem) {
     this.store.dispatch(removeFromReadingList({ item }));
   }
 }

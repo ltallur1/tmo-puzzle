@@ -4,40 +4,40 @@
       autoFocus
       matInput
       type="search"
-      placeholder="Search for books to add to your reading list"
+      placeholder="{{booksConstants.PLACEHOLDER_TEXT}}"
       formControlName="term"
     />
-    <button mat-icon-button matSuffix>
-      <mat-icon>search</mat-icon>
+    <button mat-icon-button matSuffix aria-label="search books">
+      <mat-icon>{{booksConstants.SEARCH_TEXT}}</mat-icon>
     </button>
   </mat-form-field>
 </form>
 
 <ng-container *ngIf="searchTerm; else empty">
   <div class="book-grid">
-    <div class="book" data-testing="book-item" *ngFor="let b of books">
+    <div class="book" data-testing="book-item" *ngFor="let book of books">
       <div class="book--title">
-        {{ b.title }}
+        {{ book.title }}
       </div>
       <div class="book--content">
         <div class="book--content--cover">
-          <img src="{{ b.coverUrl }}" />
+          <img src="{{ book.coverUrl }}" alt="cover page of the book"/>
         </div>
         <div class="book--content--info">
-          <div><strong>Author:</strong> {{ b.authors.join(',') }}</div>
-          <div><strong>Publisher:</strong> {{ b.publisher }}</div>
+          <div><strong>{{booksConstants.AUTHOR_TEXT}}</strong> {{ book.authors.join(',') }}</div>
+          <div><strong>{{booksConstants.PUBLISHER_TEXT}}</strong> {{ book.publisher }}</div>
           <div>
-            <strong>Published:</strong> {{ formatDate(b.publishedDate) }}
+            <strong>{{booksConstants.PUBLISHED_TEXT}}</strong> {{ book.publishedDate | date: booksConstants.DATE_FORMAT }}
           </div>
-          <p [innerHTML]="b.description"></p>
+          <p [innerHTML]="book.description"></p>
           <div>
             <button
               mat-flat-button
               color="primary"
-              (click)="addBookToReadingList(b)"
-              [disabled]="b.isAdded"
+              (click)="addBookToReadingList(book)"
+              [disabled]="book.isAdded"
             >
-              Want to Read
+             {{booksConstants.WANT_TO_READ}}
             </button>
           </div>
         </div>
@@ -48,8 +48,8 @@
 <ng-template #empty>
   <div class="empty">
     <p>
-      Try searching for a topic, for example "<a (click)="searchExample()"
-        >JavaScript</a
+      {{booksConstants.SEARCH_EXAMPLE_TEXT}} "<a (click)="searchExample()"
+        >{{booksConstants.JAVASCRIPT_EXAMPLE}}</a
       >".
     </p>
   </div>

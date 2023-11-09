@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import {
   addToReadingList,
@@ -8,23 +8,26 @@ import {
   searchBooks
 } from '@tmo/books/data-access';
 import { FormBuilder } from '@angular/forms';
-import { Book } from '@tmo/shared/models';
+import { Book, okReadsConstants } from '@tmo/shared/models';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'tmo-book-search',
   templateUrl: './book-search.component.html',
-  styleUrls: ['./book-search.component.scss']
+  styleUrls: ['./book-search.component.scss'],
 })
-export class BookSearchComponent implements OnInit {
+export class BookSearchComponent implements OnInit, OnDestroy {
   books: ReadingListBook[];
-
-  searchForm = this.fb.group({
-    term: ''
+  booksConstants = okReadsConstants;
+  destroy$: Subject<boolean> = new Subject<boolean>();
+  
+  searchForm = this.formBuilder.group({
+    term: '',
   });
 
   constructor(
     private readonly store: Store,
-    private readonly fb: FormBuilder
+    private readonly formBuilder: FormBuilder
   ) {}
 
   get searchTerm(): string {
@@ -32,15 +35,9 @@ export class BookSearchComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.select(getAllBooks).subscribe(books => {
+    this.store.select(getAllBooks).subscribe((books) => {
       this.books = books;
     });
-  }
-
-  formatDate(date: void | string) {
-    return date
-      ? new Intl.DateTimeFormat('en-US').format(new Date(date))
-      : undefined;
   }
 
   addBookToReadingList(book: Book) {
@@ -48,15 +45,20 @@ export class BookSearchComponent implements OnInit {
   }
 
   searchExample() {
-    this.searchForm.controls.term.setValue('javascript');
+    this.searchForm.controls.term.setValue(this.booksConstants.JAVASCRIPT);
     this.searchBooks();
   }
 
   searchBooks() {
-    if (this.searchForm.value.term) {
-      this.store.dispatch(searchBooks({ term: this.searchTerm }));
+    const searchText = this.searchTerm;
+    if (searchText) {
+      this.store.dispatch(searchBooks({ term: searchText }));
     } else {
       this.store.dispatch(clearSearch());
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.unsubscribe();
   }
 }
