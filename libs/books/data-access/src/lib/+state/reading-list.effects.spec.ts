@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ReplaySubject } from 'rxjs';
+import { ReplaySubject, Subject } from 'rxjs';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
@@ -8,11 +8,13 @@ import { SharedTestingModule, createBook, createReadingListItem } from '@tmo/sha
 import { ReadingListEffects } from './reading-list.effects';
 import * as ReadingListActions from './reading-list.actions';
 import { okReadsConstants } from '@tmo/shared/models';
+import { takeUntil } from 'rxjs/operators';
 
 describe('ReadingListEffects', () => {
   let actions: ReplaySubject<any>;
   let effects: ReadingListEffects;
   let httpMock: HttpTestingController;
+  let unsubscribe$: Subject<void>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -24,8 +26,14 @@ describe('ReadingListEffects', () => {
       ]
     });
 
+    afterEach (()=>{
+      unsubscribe$.next();
+      unsubscribe$.complete();
+    })  
+
     effects = TestBed.inject(ReadingListEffects);
     httpMock = TestBed.inject(HttpTestingController);
+    unsubscribe$ = new Subject<void>();
   });
 
   describe('loadReadingList$', () => {
@@ -33,7 +41,7 @@ describe('ReadingListEffects', () => {
       actions = new ReplaySubject();
       actions.next(ReadingListActions.init());
 
-      effects.loadReadingList$.subscribe(action => {
+      effects.loadReadingList$.pipe(takeUntil(unsubscribe$)).subscribe(action => {
         expect(action).toEqual(
           ReadingListActions.loadReadingListSuccess({ list: [] })
         );
@@ -49,7 +57,7 @@ describe('ReadingListEffects', () => {
       const failureError = ReadingListActions.loadReadingListError(
         new ErrorEvent(okReadsConstants.ERROR)
       );
-      effects.loadReadingList$.subscribe((action) => {
+      effects.loadReadingList$.pipe(takeUntil(unsubscribe$)).subscribe((action) => {
         expect(action.type).toEqual(failureError.type);
         done();
       });
@@ -61,7 +69,7 @@ describe('ReadingListEffects', () => {
       actions.next(
         ReadingListActions.addToReadingList({ book: createBook('A') })
       );
-      effects.addBook$.subscribe((action) => {
+      effects.addBook$.pipe(takeUntil(unsubscribe$)).subscribe((action) => {
         expect(action).toEqual(
           ReadingListActions.confirmedAddToReadingList({
             book: createBook('A'),
@@ -79,7 +87,7 @@ describe('ReadingListEffects', () => {
           item: createReadingListItem('A'),
         })
       );
-      effects.removeBook$.subscribe((action) => {
+      effects.removeBook$.pipe(takeUntil(unsubscribe$)).subscribe((action) => {
         expect(action).toEqual(
           ReadingListActions.confirmedRemoveFromReadingList({
             item: createReadingListItem('A'),
@@ -98,7 +106,7 @@ describe('ReadingListEffects', () => {
         ReadingListActions.addToReadingList({ book: createBook('A') })
       );
 
-      effects.addBook$.subscribe((action) => {
+      effects.addBook$.pipe(takeUntil(unsubscribe$)).subscribe((action) => {
         expect(action).toEqual(
           ReadingListActions.failedAddToReadingList({ book: createBook('A') })
         );
@@ -116,7 +124,7 @@ describe('ReadingListEffects', () => {
           item: createReadingListItem('A'),
         })
       );
-      effects.removeBook$.subscribe((action) => {
+      effects.removeBook$.pipe(takeUntil(unsubscribe$)).subscribe((action) => {
         expect(action).toEqual(
           ReadingListActions.failedRemoveFromReadingList({
             item: createReadingListItem('A'),
@@ -131,5 +139,33 @@ describe('ReadingListEffects', () => {
           statusText: okReadsConstants.READING_LIST_ERROR_TEXT,
         });
       });
+
+      it('should mark book as read', (done) => {
+        actions = new ReplaySubject();
+        const item = createReadingListItem('A');
+        const book = createBook('A');
+        actions.next(ReadingListActions.markBookAsRead({ book: item }));
+        effects.markBookAsRead$.pipe(takeUntil(unsubscribe$)).subscribe(() => {
+          expect(item.bookId).toEqual(
+            ReadingListActions.confirmedMarkBookAsRead({ book:item }).book.bookId
+          );
+          done();
+        });
+        httpMock.expectOne(`${okReadsConstants.READING_LIST_API}/A/${okReadsConstants.FINISHED}`).flush([]);
+      });
+
+      it('should invoke failedMarkAsRead when failed to mark book as read', (done) => {
+        actions = new ReplaySubject();
+        const item = createReadingListItem('A');
+        actions.next(ReadingListActions.markBookAsRead({ book: item }));
+        effects.markBookAsRead$.pipe(takeUntil(unsubscribe$)).subscribe((action) => {
+          expect(action).toEqual(
+            ReadingListActions.failedMarkBookAsRead({ error: 'Http failure response for /api/reading-list/A/finished: 0 ' })
+          );
+          done();
+        });
+        httpMock
+          .expectOne(`${okReadsConstants.READING_LIST_API}/A/${okReadsConstants.FINISHED}`).error(new ErrorEvent(okReadsConstants.ERROR))
+        });
   });
 });

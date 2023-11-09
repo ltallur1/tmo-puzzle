@@ -1,3 +1,4 @@
+import { okReadsConstants } from '@tmo/shared/models';
 import * as ReadingListActions from './reading-list.actions';
 import {
   initialState,
@@ -80,6 +81,28 @@ describe('Reading List Reducer', () => {
       });
       const result: State = reducer(initialState, action);
       expect(result.ids.length).toEqual(0);
+    });
+
+    it('confirmedMarkBookAsRead should mark book as read', () => {
+      const book = {
+        ...createReadingListItem('A'),
+      };
+      const action = ReadingListActions.confirmedMarkBookAsRead({ book });
+      const result: State = reducer(state, action);
+      expect(result.entities['A'].bookId).toEqual(book.bookId);
+    });
+
+    it('failedMarkBookAsRead should not mark book as read', () => {
+      const book = {
+        ...createBook('A'),
+        finished: true,
+        finishedDate: new Date().toISOString,
+      };
+      const action = ReadingListActions.failedMarkBookAsRead({
+        error: okReadsConstants.ERROR,
+      });
+      const result: State = reducer(state, action);
+      expect(result.entities['A'].finished).toBeFalsy();
     });
   });
 

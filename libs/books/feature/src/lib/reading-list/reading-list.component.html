@@ -1,4 +1,8 @@
 <ng-container *ngIf="(readingList$ | async).length > 0; else empty">
+  <div class="read-list-title-container">
+    <span>{{readingListConstants.BOOK_TITLE}}</span>|
+    <span>{{readingListConstants.FINISHED_BOOK_DETAILS}}</span>
+  </div>
   <div class="reading-list-item" *ngFor="let item of readingList$ | async">
     <div>
       <img class="reading-list-item--cover" [src]="item.coverUrl" alt="cover page of the book" />
@@ -9,13 +13,40 @@
         {{ item.authors.join(',') }}
       </div>
     </div>
-    <div>
+    <div class="reading-list-container">
+      <ng-container *ngIf="item.finished"> 
+        <div
+          matTooltip="Finished date"
+          [ngClass]="{ 'finished-list': !item.finished, 'date-col': item.finished }"
+        >
+          {{ item.finishedDate | date: readingListConstants.DATE_FORMAT }}
+        </div>
+        <button
+          mat-icon-button
+          [attr.aria-label]="'Finished reading ' + item.title"
+          class="check-box-button-back"
+          matTooltip="Finished reading {{ item.title }}"
+          data-testing="bookfinishedbutton"
+        >
+        <mat-icon>{{readingListConstants.CHECH_BOX}}</mat-icon>
+      </button>
+    </ng-container>
+    <div class="check-box-button-custom" *ngIf="!item.finished">
+      <mat-checkbox
+        color="warn"
+        matTooltip="Finished reading {{ item.title }}"
+        [checked]="item.finished"
+        (change)="markBookRead($event, item)"
+        data-testing="finishbutton"
+      ></mat-checkbox>
+    </div>
       <button
         mat-icon-button
         color="warn"
         [attr.aria-label]="'Remove ' + item.title + ' from reading list'"
         (click)="removeFromReadingList(item)"
         aria-label="Remove from reading list"
+        matTooltip="Remove {{ item.title }} from list"
       >
         <mat-icon>{{readingListConstants.REMOVE_CIRCLE}}</mat-icon>
       </button>
