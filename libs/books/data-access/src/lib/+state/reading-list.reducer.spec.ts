@@ -63,6 +63,7 @@ describe('Reading List Reducer', () => {
     it('should add book to reading list', () => {
       const action = ReadingListActions.addToReadingList({
         book: createBook('A'),
+        showSnackBar:true
       });
       const result: State = reducer(initialState, action);
       expect(result.ids.length).toEqual(1);
@@ -77,6 +78,7 @@ describe('Reading List Reducer', () => {
       ReadingListActions.loadReadingListSuccess({ list });
       const action = ReadingListActions.removeFromReadingList({
         item: createReadingListItem('A'),
+        showSnackBar:true
       });
       const result: State = reducer(initialState, action);
       expect(result.ids.length).toEqual(0);

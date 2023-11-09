@@ -36,6 +36,7 @@
               color="primary"
               (click)="addBookToReadingList(book)"
               [disabled]="book.isAdded"
+              data-testing="want-to-read-button"
             >
              {{booksConstants.WANT_TO_READ}}
             </button>

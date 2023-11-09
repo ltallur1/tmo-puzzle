@@ -41,7 +41,7 @@ export class BookSearchComponent implements OnInit, OnDestroy {
   }
 
   addBookToReadingList(book: Book) {
-    this.store.dispatch(addToReadingList({ book }));
+    this.store.dispatch(addToReadingList({ book, showSnackBar:true }));
   }
 
   searchExample() {

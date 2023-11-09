@@ -19,5 +19,10 @@ export const okReadsConstants = {
     REMOVE_CIRCLE:"remove_circle",
     READING_LIST_EMPTY_TEXT:"You haven't added any books to your reading list yet.",
     DATE_FORMAT: 'dd/MM/yyyy',
-    BAD_REQUEST_TEXT:"Bad Request"
+    BAD_REQUEST_TEXT:"Bad Request",
+    SNACKBAR_ADD:'add',
+    SNACKBAR_REMOVE:'remove',
+    SNACKBAR_ADDED_TEXT: "Added to Reading List!",
+    SNACKBAR_REMOVED_TEXT:"Removed from Reading List!",
+    UNDO:'Undo'
 }

@@ -36,7 +36,7 @@ describe('ReadingListComponent', () => {
     const book: ReadingListItem = createReadingListItem('A');
     component.removeFromReadingList(book);
     expect(store.dispatch).toHaveBeenCalledWith(
-      removeFromReadingList({ item: book })
+      removeFromReadingList({ item: book, showSnackBar:true })
     );
   });
 });
