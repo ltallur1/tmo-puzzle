@@ -9,7 +9,8 @@ import {
 } from '@tmo/books/data-access';
 import { FormBuilder } from '@angular/forms';
 import { Book, okReadsConstants } from '@tmo/shared/models';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'tmo-book-search',
@@ -20,6 +21,7 @@ export class BookSearchComponent implements OnInit, OnDestroy {
   books: ReadingListBook[];
   booksConstants = okReadsConstants;
   destroy$: Subject<boolean> = new Subject<boolean>();
+  bookSearchSubscription$: Subscription;
   
   searchForm = this.formBuilder.group({
     term: '',
@@ -38,6 +40,12 @@ export class BookSearchComponent implements OnInit, OnDestroy {
     this.store.select(getAllBooks).subscribe((books) => {
       this.books = books;
     });
+    this.bookSearchSubscription$ = this.searchForm
+    .get('term')
+    .valueChanges.pipe(debounceTime(500), distinctUntilChanged())
+    .subscribe(() => {
+      this.searchBooks();
+    });
   }
 
   addBookToReadingList(book: Book) {
@@ -46,7 +54,6 @@ export class BookSearchComponent implements OnInit, OnDestroy {
 
   searchExample() {
     this.searchForm.controls.term.setValue(this.booksConstants.JAVASCRIPT);
-    this.searchBooks();
   }
 
   searchBooks() {
@@ -60,5 +67,6 @@ export class BookSearchComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroy$.unsubscribe();
+    this.bookSearchSubscription$.unsubscribe();
   }
 }
